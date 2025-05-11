@@ -10,18 +10,13 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
 
-# أيديهات الملكين (تأكد من إضافة ID الملكين هنا)
-KING_IDS = ["ID_الملك1", "ID_الملك2"]
+# أيدي الملكين الذين يمكنهم تغيير اسم وصورة البوت
+KING_IDS = ["361039024288432138", "691265105878319195"]
 
 @bot.event
 async def on_ready():
     print(f'✅ Logged in as {bot.user}')
 
-# التحقق مما إذا كان المستخدم هو الملك أو الملك الثاني
-def is_king(ctx):
-    return str(ctx.author.id) in KING_IDS
-
-# أمر للانضمام إلى الروم الصوتي
 @bot.command()
 async def join(ctx):
     if ctx.author.voice:
@@ -31,7 +26,6 @@ async def join(ctx):
     else:
         await ctx.send("❌ لازم تكون في روم صوتي")
 
-# أمر لمغادرة الروم الصوتي
 @bot.command()
 async def leave(ctx):
     if ctx.voice_client:
@@ -40,47 +34,21 @@ async def leave(ctx):
     else:
         await ctx.send("❌ البوت مو في أي روم صوتي")
 
-# أمر لتغيير اسم البوت (فقط للملكين)
 @bot.command()
-async def set_name(ctx, *, new_name):
-    if is_king(ctx):
+async def set_name(ctx, *, new_name: str):
+    if str(ctx.author.id) in KING_IDS:
         await bot.user.edit(username=new_name)
-        await ctx.send(f"🎤 تم تغيير اسم البوت إلى {new_name}")
+        await ctx.send(f"✅ تم تغيير اسم البوت إلى: {new_name}")
     else:
-        await ctx.send("❌ فقط الملكين يمكنهم تغيير اسم البوت!")
+        await ctx.send("❌ فقط الملكين يمكنهم تغيير اسم البوت")
 
-# أمر لتغيير صورة البوت (فقط للملكين)
 @bot.command()
-async def set_avatar(ctx, url: str):
-    if is_king(ctx):
-        try:
-            # تحميل الصورة من الرابط وتحديث صورة البوت
-            async with ctx.session.get(url) as response:
-                avatar = await response.read()
-                await bot.user.edit(avatar=avatar)
-            await ctx.send("🎨 تم تغيير صورة البوت بنجاح!")
-        except Exception as e:
-            await ctx.send(f"❌ حدث خطأ أثناء تغيير الصورة: {e}")
+async def set_avatar(ctx):
+    if str(ctx.author.id) in KING_IDS:
+        await bot.user.edit(avatar=open("new_avatar.png", "rb").read())
+        await ctx.send("✅ تم تغيير صورة البوت")
     else:
-        await ctx.send("❌ فقط الملكين يمكنهم تغيير صورة البوت!")
-
-# أمر للبوت للبقاء في الروم الصوتي فقط دون تشغيل أغاني
-@bot.command()
-async def play(ctx, *, url=None):
-    if not ctx.voice_client:
-        await ctx.invoke(bot.get_command('join'))
-
-    # البوت سيبقى فقط في الروم الصوتي دون تشغيل أغاني الآن
-    await ctx.send("🎵 سأبقى في الروم الصوتي ولكن لن أشغل أغاني في الوقت الحالي.")
-
-# أمر لإيقاف تشغيل الموسيقى
-@bot.command()
-async def stop(ctx):
-    if ctx.voice_client:
-        ctx.voice_client.stop()
-        await ctx.send("⏹️ Stopped playing")
-    else:
-        await ctx.send("❌ البوت مشغول حاليًا في الروم الصوتي فقط.")
+        await ctx.send("❌ فقط الملكين يمكنهم تغيير صورة البوت")
 
 # تشغيل البوت باستخدام التوكن من ملف .env
 bot.run(os.getenv("DISCORD_TOKEN"))
