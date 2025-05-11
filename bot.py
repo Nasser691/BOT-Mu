@@ -3,6 +3,7 @@ import os
 import discord
 from discord.ext import commands
 import yt_dlp
+import requests
 
 # تحميل المتغيرات من ملف .env
 load_dotenv()
@@ -10,6 +11,14 @@ load_dotenv()
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix='!', intents=intents)
+
+# تحميل الكوكيز من GitHub
+cookies_url = "https://raw.githubusercontent.com/your-username/your-repo-name/main/config/cookies.txt"
+cookies_response = requests.get(cookies_url)
+
+# حفظ الكوكيز في ملف محلي
+with open("cookies.txt", "wb") as file:
+    file.write(cookies_response.content)
 
 @bot.event
 async def on_ready():
@@ -40,7 +49,8 @@ async def play(ctx, *, url):
     ydl_opts = {
         'format': 'bestaudio',
         'quiet': True,
-        'noplaylist': True
+        'noplaylist': True,
+        'cookies': 'cookies.txt'  # تحديد ملف الكوكيز
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
