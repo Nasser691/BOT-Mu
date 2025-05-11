@@ -2,6 +2,21 @@ from dotenv import load_dotenv
 import os
 import discord
 from discord.ext import commands
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# تشغيل سيرفر وهمي حتى يتجنب Render مشكلة Port Scan Timeout
+class SimpleHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b'Bot is running!')
+
+def run_fake_web_server():
+    server = HTTPServer(('0.0.0.0', 10000), SimpleHandler)
+    server.serve_forever()
+
+threading.Thread(target=run_fake_web_server).start()
 
 # تحميل المتغيرات من ملف .env
 load_dotenv()
